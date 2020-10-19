@@ -1,0 +1,116 @@
+无向图：(u, v) u -> v or v -> u
+有向图：(u, v) u -> v and (v, u) v -> u
+有权图：(u, v, w) -> from u to v or v to u, the weight is w
+
+special graphs：
+Trees: 无向无权无环图 N个顶点，N - 1条边
+Rooted Trees: 有特定的根节点，所有节点均指向该节点（in tree）或者从该节点出发（out tree）
+Directed Acyclic Graphs(DAGs): 有向无环图 - 所有的out trees都是DAGs，但是并非所有的DAGs都是out trees
+Bipartite Graphs: 二分图的所有节点可以被分成两个独立的组U和V，使得所有的边均链接UV两个组，无奇数边的环
+Complete Graphs: the graph that has unique edges between every pair of nodes
+
+如何表示graph
+邻接矩阵 matrix[i][j]: the weight from node i to node j - 稠密图
+邻接表  [(neighbor, weight)]: 对每个节点只表示其邻居节点和对应边的weight - 稀疏图
+Edge List: an unordered list of edges, (u, v, w) -> the weight from node u to node v is w
+
+shortest path problems
+BFS(unweighted graphs), Dijkstra, Bellman-Ford, Floyd-Warshall, A*...
+
+connectivity: is there a path from node a to node b
+Union Find or any Search algorithms such as DFS
+
+negative cycle detection
+Bellman-Ford, Floyd-Warshall
+
+strongly connected components(sccs): self-contained cycles in which every node can reach every other node in the cycle
+Tarjans, Kosaraju
+
+traveling salesman problem(TSP): Given a collection of cities and distance between every pairs, find out the shortest route that visit every city only once and come back to origin finally.
+Held-Karp, branch and bound
+
+bridges(critical edges): after removing these bridges, the # of connected components will increase, indicating the weak edge or bottlenecks
+
+articulation points: after removing these points, the # of connected components will increase, indicating the weak point
+
+minimum spining trees(MST): a subset of edges from graphs connecting all the nodes with least total weights, without cycle, typical not unique
+Kruskal, Prim and Boruvka
+
+network flow(max flow): Given the weighted network, source and destination, determine the max data speed that is allowed within the network
+Ford-Fulkerson, Edmonds-Karp & Dinic algorithm
+
+
+DFS/BFS basics
+
+Graph on grid: assume the grid as unweighted graph, every cell connects with left, right, up and down using direction vector
+
+Topological sort: not unique for DAGs without cycle, using BFS
+
+有向无环图的单源最短路径问题：
+无权：BFS
+有权：using topSort with O(V + E)
+
+有向无环图的最长路径问题：-> let every edge weight * -1 and find the shortest path on DAG, then convert the shortest path to longest path problem again by * -1 again !
+NP hard on general graph with 正权
+O(V + E) on DAGs
+
+Dijkstra
+给定DAGs中没有negative weight
+time: O(E * logV)
+greedy algorithm
+
+1 lazy implementation of Dijkstra allow duplicate key-value pairs in pq because it is more efficient to insert a new pair(O(logn)) than delete the old one(O(n))
+2 instead, we can use Index pq to update the existing key-value pair with O(logn) time and avoid duplicates efficiently
+eager implementation of Dijkstra does not allow duplicate key-value pairs in Ipq, just insert new key-value pair or update existing ke-value pairs with O(logn) time
+3 using D-ary heap will optimize the update operation furthermore even though hurt the less remove operation
+  D = E / V
+  MinIndexedDHeap<Pair> ipq = new MinIndexedDHeap(D, Pair);
+
+Bellman-Ford
+有向无环图的单源最短路径问题：O(E * V) larger than Dijkstra O((E + V)logV) but can handle the negative edge weights
+
+Floyd-Warshall: all-pairs shortest path algorithm，一次性找到图中所有node pair<i, j>之间的最短距离
+
+Traveling Salesman Problems(TSP): 给定n个cities和任意两个city之间的distance，找到一个route保证visit每一个city仅一次，同时route的长度最短
+1 暴力法：依次确定每一个要visit的city - O(n!)
+2 DP: 在决定n个city的最优路径时，reuse有n - 1个city时的所有最优路径 - O(n * 2^n)
+  1 state: memo[i][state at i]分别记录last visit node为i时，给定state(记录所有已访问的节点)的情况下的最短路径长度
+  2 func: memo[i][state at i] = memo[j][state at j] + dist[j][i] (其中j为state at i中已访问节点的任意一个节点，但不能为i。并且state at j没有visit node i)
+  3 initialize: memo[start][i] = dist[start][i]
+  4 answer: min(memo[end][END_STATE]) (end != start && END_STATE 表示所有node都已经visit)
+
+Prim's minimum spanning trees(MST): 在给定的无向有权图中找到一组edge subset，使得所有的节点连接起来without cycles and minimize the total edge weight，通常MST with same minimal costs不唯一
+如果给定的无向有权graph并不是全联通的，那么就不存在MST
+Prim本质是greedy MST algorithm，works well on dense graph and fully connected graph，但是对于求解minimum spanning forest on disconnected graph效果不好，需要在每一个单独的connected component上运行
+
+lazy version: - O(ElogE)
+1 定义一个min priority queue，sort edges by its weight
+2 start from source node，add all edges pointing to unvisited nodes from that node into pq
+3 get edge with min weight from pq and check whether the nodes has been visited (lazy process, avoid stale edges)
+4 mark the min edge and the edge points, then add all edges around that point into pq
+
+eager version: - O(ElogV)
+using MinIndexedDHeap<Pair> ipq = new MinIndexedDHeap(D, Pair) to update existing edge rather than insert new edges
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
